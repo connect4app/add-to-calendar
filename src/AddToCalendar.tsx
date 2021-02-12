@@ -65,7 +65,7 @@ type CalendarProps = {
 
 const Calendar = React.forwardRef<CalendarRef, CalendarProps>(
   ({ children, filename = false, href }, ref) => (
-    <a ref={ref} download={filename} href="#" rel="noopener noreferrer" onClick={()=> window.open(href, "_blank")}>
+    <a ref={ref} download={filename} href={href} target="_blank" rel="noopener noreferrer">
       {children}
     </a>
   )
