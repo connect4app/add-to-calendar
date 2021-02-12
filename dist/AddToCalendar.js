@@ -60,7 +60,7 @@ var useOpenState = function (initialOpen) {
 };
 var Calendar = react_1.default.forwardRef(function (_a, ref) {
     var children = _a.children, _b = _a.filename, filename = _b === void 0 ? false : _b, href = _a.href;
-    return (react_1.default.createElement("a", { ref: ref, download: filename, href: "#", rel: "noopener noreferrer", onClick: function () { return window.open(href, "_blank"); } }, children));
+    return (react_1.default.createElement("a", { ref: ref, download: filename, href: href, target: "_blank", rel: "noopener noreferrer" }, children));
 });
 var Dropdown = function (_a) {
     var filename = _a.filename, onToggle = _a.onToggle, urls = _a.urls;

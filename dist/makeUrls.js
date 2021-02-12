@@ -32,9 +32,10 @@ var makeOutlookCalendarUrl = function (event) { return makeUrl("https://outlook.
     subject: event.name,
     location: event.location,
     body: event.details,
+    to: event.addresses,
     allday: false,
     uid: new Date().getTime().toString(),
-    path: "/calendar/view/Month"
+    path: "/calendar/view/Month",
 }); };
 var makeYahooCalendarUrl = function (event) { return makeUrl("https://calendar.yahoo.com", {
     v: 60,
