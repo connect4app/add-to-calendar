@@ -51,9 +51,10 @@ const makeOutlookCalendarUrl = (event: CalendarEvent) => makeUrl("https://outloo
   subject: event.name,
   location: event.location,
   body: event.details,
+  to: event.addresses,
   allday: false,
   uid: new Date().getTime().toString(),
-  path: "/calendar/view/Month"
+  path: "/calendar/view/Month",
 });
 
 const makeYahooCalendarUrl = (event: CalendarEvent) => makeUrl("https://calendar.yahoo.com", {
