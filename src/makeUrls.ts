@@ -32,6 +32,18 @@ const makeUrl = (base: string, query: Query) => Object.keys(query).reduce(
   base
 );
 
+const fixOutlookText = (urlEncoded : string): string => {
+  urlEncoded.replace(" ", "%0A")
+  urlEncoded.replace("(", escape("("))
+  urlEncoded.replace(")", escape(")"))
+
+  return urlEncoded;
+}
+
+const fixOutlookEmail = (email : string): string => {
+  return email.replace("+", "+")
+}
+
 // some unoffical references for URL format:
 // https://stackoverflow.com/questions/22757908/what-parameters-are-required-to-create-an-add-to-google-calendar-link
 // https://github.com/InteractionDesignFoundation/add-event-to-calendar-docs/blob/master/services/google.md
@@ -44,18 +56,37 @@ const makeGoogleCalendarUrl = (event: CalendarEvent) => makeUrl("https://calenda
   add: event.addresses
 });
 
-const makeOutlookCalendarUrl = (event: CalendarEvent) => makeUrl("https://outlook.live.com/owa", {
-  rru: "addevent",
-  startdt: event.startsAt,
-  enddt: event.endsAt,
-  subject: event.name,
-  location: event.location,
-  body: event.details,
-  to: event.addresses,
-  allday: false,
-  uid: new Date().getTime().toString(),
-  path: "/calendar/view/Month",
-});
+const makeOutlookCalendarUrl = (event: CalendarEvent) => {
+  if (event.addresses) {
+    event.addresses.map((e) => { return fixOutlookEmail(e) });
+  }
+
+  return makeUrl("https://outlook.live.com/", {
+    startdt: event.startsAt,
+    enddt: event.endsAt,
+    subject: event.name,
+    location: event.location,
+    body: event.details,
+    to: event.addresses,
+    allday: false,
+    uid: new Date().getTime().toString(),
+    path: "/calendar/0/deeplink/compose",
+  });
+}
+// const makeOutlookCalendarUrl = (event: CalendarEvent) => {
+//   makeUrl("https://outlook.live.com/owa", {
+//     rru: "addevent",
+//     startdt: event.startsAt,
+//     enddt: event.endsAt,
+//     subject: fixOutlookText(event.name),
+//     location: event.location,
+//     body: fixOutlookText(event.details),
+//     to: event.addresses.map((e) => {fixOutlookEmail(e)}),
+//     allday: false,
+//     uid: new Date().getTime().toString(),
+//     path: "/calendar/view/Month",
+//   });
+// }
 
 const makeYahooCalendarUrl = (event: CalendarEvent) => makeUrl("https://calendar.yahoo.com", {
   v: 60,
