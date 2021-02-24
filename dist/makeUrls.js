@@ -14,6 +14,15 @@ var makeUrl = function (base, query) { return Object.keys(query).reduce(function
     var stringValue = Array.isArray(value) ? value.join(",") : value;
     return "" + accum + (index === 0 ? "?" : "&") + key + "=" + encodeURIComponent(stringValue);
 }, base); };
+var fixOutlookText = function (urlEncoded) {
+    urlEncoded.replace(" ", "%0A");
+    urlEncoded.replace("(", escape("("));
+    urlEncoded.replace(")", escape(")"));
+    return urlEncoded;
+};
+var fixOutlookEmail = function (email) {
+    return email.replace("+", "+");
+};
 // some unoffical references for URL format:
 // https://stackoverflow.com/questions/22757908/what-parameters-are-required-to-create-an-add-to-google-calendar-link
 // https://github.com/InteractionDesignFoundation/add-event-to-calendar-docs/blob/master/services/google.md
@@ -25,18 +34,36 @@ var makeGoogleCalendarUrl = function (event) { return makeUrl("https://calendar.
     details: event.details,
     add: event.addresses
 }); };
-var makeOutlookCalendarUrl = function (event) { return makeUrl("https://outlook.live.com/owa", {
-    rru: "addevent",
-    startdt: event.startsAt,
-    enddt: event.endsAt,
-    subject: event.name,
-    location: event.location,
-    body: event.details,
-    to: event.addresses,
-    allday: false,
-    uid: new Date().getTime().toString(),
-    path: "/calendar/view/Month",
-}); };
+var makeOutlookCalendarUrl = function (event) {
+    if (event.addresses) {
+        event.addresses.map(function (e) { return fixOutlookEmail(e); });
+    }
+    return makeUrl("https://outlook.live.com/", {
+        startdt: event.startsAt,
+        enddt: event.endsAt,
+        subject: event.name,
+        location: event.location,
+        body: event.details,
+        to: event.addresses,
+        allday: false,
+        uid: new Date().getTime().toString(),
+        path: "/calendar/0/deeplink/compose",
+    });
+};
+// const makeOutlookCalendarUrl = (event: CalendarEvent) => {
+//   makeUrl("https://outlook.live.com/owa", {
+//     rru: "addevent",
+//     startdt: event.startsAt,
+//     enddt: event.endsAt,
+//     subject: fixOutlookText(event.name),
+//     location: event.location,
+//     body: fixOutlookText(event.details),
+//     to: event.addresses.map((e) => {fixOutlookEmail(e)}),
+//     allday: false,
+//     uid: new Date().getTime().toString(),
+//     path: "/calendar/view/Month",
+//   });
+// }
 var makeYahooCalendarUrl = function (event) { return makeUrl("https://calendar.yahoo.com", {
     v: 60,
     view: "d",
