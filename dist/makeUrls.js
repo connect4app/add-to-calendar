@@ -38,7 +38,7 @@ var makeOutlookCalendarUrl = function (event) {
     if (event.addresses) {
         event.addresses.map(function (e) { return fixOutlookEmail(e); });
     }
-    return makeUrl("https://outlook.live.com/", {
+    return makeUrl("https://outlook.live.com/calendar/0/deeplink/compose", {
         startdt: event.startsAt,
         enddt: event.endsAt,
         subject: event.name,
@@ -47,7 +47,6 @@ var makeOutlookCalendarUrl = function (event) {
         to: event.addresses,
         allday: false,
         uid: new Date().getTime().toString(),
-        path: "/calendar/0/deeplink/compose",
     });
 };
 // const makeOutlookCalendarUrl = (event: CalendarEvent) => {

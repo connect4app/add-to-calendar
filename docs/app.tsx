@@ -23,8 +23,8 @@ const Field = ({ children, name, value, setValue }: FieldProps) => {
 };
 
 const App = () => {
-  const [name, setName] = React.useState("Happy Hour");
-  const [details, setDetails] = React.useState("Let's go after work");
+  const [name, setName] = React.useState("Welcome to Happy (Hour)");
+  const [details, setDetails] = React.useState("Let's go <br>(after work)");
   const [location, setLocation] = React.useState("Boston, MA");
   const [startsAt, setStartsAt] = React.useState("2018-12-06T17:00:00-05:00");
   const [endsAt, setEndsAt] = React.useState("2018-12-06T18:00:00-05:00");

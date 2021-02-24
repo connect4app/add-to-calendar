@@ -16,7 +16,7 @@ const makeTime = (time: string) => new Date(time).toISOString().replace(/[-:]|\.
 
 type Query = { [key: string]: null | boolean | number | string | string[] | undefined };
 
-const makeUrl = (base: string, query: Query) => Object.keys(query).reduce(
+const makeUrl = (base: string, query: Query, outlook=false) => Object.keys(query).reduce(
   (accum, key, index) => {
     const value = query[key];
 
@@ -27,21 +27,24 @@ const makeUrl = (base: string, query: Query) => Object.keys(query).reduce(
     // if array then flatten down to csv
     const stringValue = Array.isArray(value) ? value.join(","): value;
 
-    return `${accum}${index === 0 ? "?" : "&"}${key}=${encodeURIComponent(stringValue)}`;
+    // outlook didn't like our fix to space encoding used in fixOutlookText in location field
+    const encodedStringValue = outlook && key !== "location" ? fixOutlookText(encodeURIComponent(stringValue)) : encodeURIComponent(stringValue) ;
+
+    return `${accum}${index === 0 ? "?" : "&"}${key}=${encodedStringValue}`;
   },
   base
 );
 
 const fixOutlookText = (urlEncoded : string): string => {
-  urlEncoded.replace(" ", "%0A")
-  urlEncoded.replace("(", escape("("))
-  urlEncoded.replace(")", escape(")"))
-
+  // https://github.com/connect4app/add-to-calendar/issues/3
+  // https://github.com/InteractionDesignFoundation/add-event-to-calendar-docs/issues/20
+  urlEncoded = urlEncoded.replace(/%20/g, "%26%2332%3B")
+  // https://github.com/connect4app/add-to-calendar/issues/2
+  urlEncoded = urlEncoded.replace(/\(/g, escape("["))
+  urlEncoded = urlEncoded.replace(/\)/g, escape("]"))
+  // https://github.com/connect4app/add-to-calendar/issues/1
+  urlEncoded = urlEncoded.replace(/\+/g, escape("+"))
   return urlEncoded;
-}
-
-const fixOutlookEmail = (email : string): string => {
-  return email.replace("+", "+")
 }
 
 // some unoffical references for URL format:
@@ -57,11 +60,19 @@ const makeGoogleCalendarUrl = (event: CalendarEvent) => makeUrl("https://calenda
 });
 
 const makeOutlookCalendarUrl = (event: CalendarEvent) => {
-  if (event.addresses) {
-    event.addresses.map((e) => { return fixOutlookEmail(e) });
-  }
+  // if (event.addresses) {
+  //   event.addresses.map((e) => { return fixOutlookEmail(e) });
+  // }
+  //
+  // if (event.details) {
+  //   event.details = fixOutlookText(event.details);
+  // }
+  //
+  // if (event.name) {
+  //   event.name = fixOutlookText(event.name);
+  // }
 
-  return makeUrl("https://outlook.live.com/", {
+  return makeUrl("https://outlook.live.com/calendar/0/deeplink/compose", {
     startdt: event.startsAt,
     enddt: event.endsAt,
     subject: event.name,
@@ -70,8 +81,7 @@ const makeOutlookCalendarUrl = (event: CalendarEvent) => {
     to: event.addresses,
     allday: false,
     uid: new Date().getTime().toString(),
-    path: "/calendar/0/deeplink/compose",
-  });
+  }, true);
 }
 // const makeOutlookCalendarUrl = (event: CalendarEvent) => {
 //   makeUrl("https://outlook.live.com/owa", {
